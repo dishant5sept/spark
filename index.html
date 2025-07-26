@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Borel&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-borel { font-family: 'Borel', cursive; }
+        @keyframes spark-reveal {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .spark-animation { animation: spark-reveal 1.5s ease-in-out forwards; }
+        #chat-messages::-webkit-scrollbar { display: none; }
+        #chat-messages { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-purple-50 h-screen w-screen overflow-hidden flex items-center justify-center">
+
+    <!-- Main container -->
+    <div id="app-container" class="w-full h-full sm:w-[400px] sm:h-[800px] bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col relative">
+
+        <!-- 1. Brand Reveal Screen -->
+        <div id="splash-screen" class="w-full h-full flex flex-col items-center justify-center bg-white p-8">
+            <div class="spark-animation text-center">
+                <img src="spark_logo.png" alt="Spark Logo" class="w-32 h-auto mx-auto">
+            </div>
+        </div>
+        
+        <!-- 2. Login Screen -->
+        <div id="login-screen" class="w-full h-full flex flex-col items-center justify-center bg-purple-200 p-8 hidden">
+            <div class="w-full max-w-sm">
+                <h1 class="text-4xl font-borel text-purple-700 mb-8 text-center">Welcome</h1>
+                <div class="w-full bg-white p-8 rounded-2xl shadow-lg text-center">
+                    <p class="text-gray-600 mb-6">Sign in to continue</p>
+                    <button id="google-signin-btn" class="w-full bg-white text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center">
+                        <img src="google.png" alt="Google logo" class="w-6 h-6 mr-3">
+                        Sign in with Google
+                    </button>
+                </div>
+                <div id="error-container" class="text-center text-red-600 mt-4 font-medium text-sm p-3 bg-red-100 border border-red-300 rounded-lg hidden"></div>
+            </div>
+        </div>
+
+        <!-- Verified Screen -->
+        <div id="verified-screen" class="w-full h-full flex items-center justify-center bg-purple-200 hidden">
+            <img src="verified.png" alt="Verified" class="w-full h-full object-cover">
+        </div>
+
+        <!-- 3. Hello User Screen -->
+        <div id="hello-screen" class="w-full h-full flex flex-col items-center justify-center bg-purple-200 p-8 hidden">
+             <div id="hello-avatar-container" class="w-32 h-32 rounded-full bg-white mb-6 shadow-lg"></div>
+             <h1 id="hello-message" class="text-4xl font-borel text-purple-700"></h1>
+        </div>
+
+        <!-- 4. Chat Screen -->
+        <!-- FIX: Complete restructure of the chat screen for proper scrolling -->
+        <div id="chat-screen" class="w-full h-full flex flex-col bg-purple-50 hidden">
+            <!-- Header -->
+            <div class="bg-purple-500 text-white p-4 flex items-center shadow-md z-10 flex-shrink-0">
+                <div id="other-user-avatar-header" class="w-10 h-10 bg-white mr-3 rounded-full"></div>
+                <div>
+                    <h2 id="chat-header-name" class="font-bold text-lg"></h2>
+                    <p id="chat-header-status" class="text-sm opacity-80">Offline</p>
+                </div>
+            </div>
+
+            <!-- Scrolling Content Area -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Messages Area -->
+                <div id="chat-messages" class="p-4 flex flex-col gap-1"></div>
+                
+                <!-- Other User's Typing Avatar -->
+                <div id="other-user-typing-avatar-container" class="px-4 pb-2 h-20 flex items-center"></div>
+                
+                <!-- Gemini Suggestions Area -->
+                <div id="gemini-suggestions-container" class="px-4 pb-2 space-y-2"></div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-4 bg-white border-t border-gray-200 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <button id="gemini-btn" class="p-2 text-purple-600 hover:bg-purple-100 rounded-full">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.636-6.364l.707-.707M12 21v-1m-6.364-1.636l.707-.707M6.343 6.343l-.707-.707m12.728 12.728l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                    <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 w-full px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <button id="send-btn" class="bg-purple-600 text-white rounded-full p-3 flex-shrink-0 hover:bg-purple-700 transition-transform transform active:scale-90">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, setDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcTnwjpH8868XIyitLMY6eUmi2-My5MWA",
+            authDomain: "spark-8f3eb.firebaseapp.com",
+            projectId: "spark-8f3eb",
+            storageBucket: "spark-8f3eb.appspot.com",
+            messagingSenderId: "801181402349",
+            appId: "1:801181402349:web:1e5618f9067a7a639c78e4",
+            measurementId: "G-C4EXT7BNM4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- App State & Config ---
+        let currentUser = null;
+        let otherUser = null;
+        let typingTimer;
+        let lastReceivedMessage = null;
+        const appId = firebaseConfig.appId;
+
+        // User definitions
+        const USERS = {
+            'dishantyadav10s@gmail.com': { id: 'dishant', name: 'Dishant' },
+            'yadavsakshi972@gmail.com': { id: 'sakshi', name: 'Sakshi' }
+        };
+        
+        const AVATAR_URLS = {
+            dishant: 'dishant.png',
+            sakshi: 'jyoti.png' // Using jyoti.png for Sakshi's avatar
+        };
+
+        // --- UI Helper ---
+        function showScreen(screenId) {
+            ['splash-screen', 'login-screen', 'verified-screen', 'hello-screen', 'chat-screen'].forEach(id => {
+                const screen = document.getElementById(id);
+                screen.classList.toggle('hidden', id !== screenId);
+                screen.classList.toggle('flex', id === screenId);
+            });
+        }
+
+        // --- Gemini API Logic ---
+        async function callGeminiApi(prompt, jsonSchema = null) {
+            const suggestionsContainer = document.getElementById('gemini-suggestions-container');
+            suggestionsContainer.innerHTML = `<div class="text-center text-sm text-gray-500">✨ Generating...</div>`;
+
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            
+            if (jsonSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                };
+            }
+
+            const apiKey = "AIzaSyASA-Oq2VTlg3dsxdZvveQi-qw6wJ14ynM"; // API key will be provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                
+                const result = await response.json();
+                
+                if (result.candidates?.[0]?.content?.parts?.[0]) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    return jsonSchema ? JSON.parse(text) : text;
+                } else {
+                    throw new Error("No content received from API.");
+                }
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                suggestionsContainer.innerHTML = `<div class="text-center text-sm text-red-500">Could not generate suggestions.</div>`;
+                return null;
+            }
+        }
+
+        async function getSuggestedReplies() {
+            if (!lastReceivedMessage) {
+                document.getElementById('gemini-suggestions-container').innerHTML = `<div class="text-center text-sm text-gray-500">No message to reply to.</div>`;
+                return;
+            }
+            const prompt = `Based on this message: "${lastReceivedMessage}". Suggest three short, distinct replies. Provide the response as a JSON array of strings.`;
+            const schema = { type: "ARRAY", items: { type: "STRING" } };
+            const replies = await callGeminiApi(prompt, schema);
+            
+            if (replies && Array.isArray(replies)) {
+                const suggestionsContainer = document.getElementById('gemini-suggestions-container');
+                suggestionsContainer.innerHTML = `<div class="flex flex-wrap gap-2 justify-center"></div>`;
+                const flexContainer = suggestionsContainer.querySelector('div');
+                replies.forEach(reply => {
+                    const button = document.createElement('button');
+                    button.textContent = reply;
+                    button.className = 'px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm cursor-pointer hover:bg-purple-300 transition-all';
+                    button.onclick = () => {
+                        document.getElementById('message-input').value = reply;
+                        suggestionsContainer.innerHTML = '';
+                    };
+                    flexContainer.appendChild(button);
+                });
+            }
+        }
+
+        async function getMagicCompose() {
+            const currentText = document.getElementById('message-input').value.trim();
+            if (!currentText) {
+                document.getElementById('gemini-suggestions-container').innerHTML = `<div class="text-center text-sm text-gray-500">Write a message to rephrase.</div>`;
+                return;
+            }
+            const prompt = `Rephrase this message: "${currentText}". Provide three distinct options: one casual, one formal, and one poetic. Return a JSON object with keys "casual", "formal", and "poetic".`;
+            const schema = { type: "OBJECT", properties: { "casual": { "type": "STRING" }, "formal": { "type": "STRING" }, "poetic": { "type": "STRING" } } };
+            const rephrased = await callGeminiApi(prompt, schema);
+
+            if (rephrased) {
+                const suggestionsContainer = document.getElementById('gemini-suggestions-container');
+                suggestionsContainer.innerHTML = `<div class="flex flex-wrap gap-2 justify-center"></div>`;
+                const flexContainer = suggestionsContainer.querySelector('div');
+                Object.values(rephrased).forEach(phrase => {
+                    const button = document.createElement('button');
+                    button.textContent = phrase;
+                    button.className = 'px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm cursor-pointer hover:bg-purple-300 transition-all';
+                    button.onclick = () => {
+                        document.getElementById('message-input').value = phrase;
+                        suggestionsContainer.innerHTML = '';
+                    };
+                    flexContainer.appendChild(button);
+                });
+            }
+        }
+
+        // --- Authentication Logic ---
+        let isInitialLoad = true;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (isInitialLoad) return;
+            if (user) {
+                const userData = USERS[user.email];
+                if (userData) {
+                    currentUser = { ...userData, uid: user.uid, email: user.email };
+                    otherUser = Object.values(USERS).find(u => u.id !== currentUser.id);
+                    showScreen('verified-screen');
+                    setTimeout(() => {
+                        showHelloScreen().then(() => {
+                            setTimeout(() => {
+                                setupChat();
+                                showScreen('chat-screen');
+                            }, 2000);
+                        });
+                    }, 2000);
+                } else {
+                    const errorContainer = document.getElementById('error-container');
+                    errorContainer.innerHTML = `This email (${user.email}) is not authorized for Spark.`;
+                    errorContainer.classList.remove('hidden');
+                    await signOut(auth);
+                }
+            } else { 
+                showScreen('login-screen'); 
+            }
+        });
+
+        document.getElementById('google-signin-btn').addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.classList.add('hidden');
+            signInWithPopup(auth, provider).catch((error) => {
+                console.error("Sign-in error:", error);
+                errorContainer.classList.remove('hidden');
+                if (error.code === 'auth/unauthorized-domain') {
+                    errorContainer.innerHTML = `<strong>Error:</strong> This website's domain is not authorized.<br><strong>To fix:</strong> Go to your Firebase Console -> Authentication -> Settings -> Authorized Domains and add the following domain:<br><code class="bg-red-200 p-1 rounded mt-1 block">${window.location.hostname}</code>`;
+                } else { errorContainer.textContent = `An error occurred: ${error.message}`; }
+            });
+        });
+
+        // --- Core App Logic ---
+        async function showHelloScreen() {
+            document.getElementById('hello-avatar-container').innerHTML = `<img src="${AVATAR_URLS[currentUser.id]}" alt="${currentUser.name}" class="w-full h-full object-cover rounded-full">`;
+            document.getElementById('hello-message').textContent = `Hello ${currentUser.name}`;
+            showScreen('hello-screen');
+        }
+
+        function setupChat() {
+            document.getElementById('chat-header-name').textContent = otherUser.name;
+            document.getElementById('other-user-avatar-header').innerHTML = `<img src="${AVATAR_URLS[otherUser.id]}" alt="${otherUser.name}" class="w-full h-full object-cover rounded-full">`;
+
+            const messagesRef = collection(db, 'artifacts', appId, 'public/data', 'messages');
+            const q = query(messagesRef, orderBy("timestamp"));
+            onSnapshot(q, (snapshot) => {
+                const messagesContainer = document.getElementById('chat-messages');
+                messagesContainer.innerHTML = '';
+                const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                messages.forEach((msg, index) => {
+                    const messageWrapper = document.createElement('div');
+                    const div = document.createElement('div');
+                    const avatar = document.createElement('div');
+
+                    div.classList.add('p-3', 'max-w-[75%]', 'rounded-2xl', 'shadow', 'break-words');
+                    div.textContent = msg.text;
+                    
+                    const isSent = msg.senderId === currentUser.uid;
+                    messageWrapper.classList.add('w-full', 'flex', isSent ? 'justify-end' : 'justify-start');
+                    avatar.classList.add('w-6', 'h-6', 'rounded-full', 'mx-2', 'self-end', 'flex-shrink-0');
+
+                    if (isSent) {
+                        div.classList.add('bg-purple-500', 'text-white');
+                        messageWrapper.appendChild(div);
+                        messageWrapper.appendChild(avatar);
+                    } else {
+                        div.classList.add('bg-gray-200', 'text-gray-800');
+                        messageWrapper.appendChild(avatar);
+                        messageWrapper.appendChild(div);
+                        lastReceivedMessage = msg.text; // Store last received message for Gemini
+                    }
+                    
+                    const nextMsg = messages[index + 1];
+                    const isLastInSequence = !nextMsg || nextMsg.senderId !== msg.senderId;
+
+                    if (isLastInSequence) {
+                        const user = isSent ? currentUser : otherUser;
+                        avatar.innerHTML = `<img src="${AVATAR_URLS[user.id]}" class="w-full h-full rounded-full object-cover">`;
+                    }
+
+                    messagesContainer.appendChild(messageWrapper);
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+
+            const presenceRef = doc(db, 'artifacts', appId, 'public/data/presence', otherUser.id);
+            onSnapshot(presenceRef, (doc) => updateOtherUserStatus(doc.exists() ? doc.data().status : 'offline'));
+            
+            updateMyStatus('idle');
+            setupPresenceListeners();
+        }
+
+        function updateOtherUserStatus(status) {
+            document.getElementById('chat-header-status').textContent = status ? (status.charAt(0).toUpperCase() + status.slice(1)) : 'Offline';
+            const typingContainer = document.getElementById('other-user-typing-avatar-container');
+            if (status === 'typing' || status === 'focused') {
+                typingContainer.innerHTML = `<img src="${AVATAR_URLS[otherUser.id]}" alt="${otherUser.name}" class="w-16 h-16 rounded-full shadow-lg">`;
+            } else { typingContainer.innerHTML = ''; }
+        }
+
+        async function updateMyStatus(status) {
+            if (!currentUser) return;
+            const presenceRef = doc(db, 'artifacts', appId, 'public/data/presence', currentUser.id);
+            await setDoc(presenceRef, { status, name: currentUser.name }).catch(e => console.error("Status update failed:", e));
+        }
+
+        function setupPresenceListeners() {
+            const input = document.getElementById('message-input');
+            input.onfocus = () => updateMyStatus('focused');
+            input.onblur = () => updateMyStatus('idle');
+            input.oninput = () => {
+                clearTimeout(typingTimer);
+                updateMyStatus('typing');
+                typingTimer = setTimeout(() => { if (document.activeElement === input) updateMyStatus('focused'); }, 1500);
+            };
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (text && currentUser) {
+                input.value = '';
+                document.getElementById('gemini-suggestions-container').innerHTML = '';
+                const messagesRef = collection(db, 'artifacts', appId, 'public/data', 'messages');
+                await addDoc(messagesRef, { text, senderId: currentUser.uid, senderName: currentUser.name, timestamp: serverTimestamp() })
+                    .catch(e => { console.error("Send failed:", e); input.value = text; });
+            }
+        }
+        
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('message-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        
+        document.getElementById('gemini-btn').addEventListener('click', () => {
+            const suggestionsContainer = document.getElementById('gemini-suggestions-container');
+            if (suggestionsContainer.innerHTML !== '') {
+                suggestionsContainer.innerHTML = '';
+                return;
+            }
+
+            const canSuggestReply = lastReceivedMessage !== null;
+            
+            const suggestReplyButtonHTML = `
+                <button 
+                    id="suggest-reply-btn" 
+                    class="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm cursor-pointer hover:bg-purple-300 transition-all ${!canSuggestReply ? 'opacity-50 cursor-not-allowed' : ''}"
+                    ${!canSuggestReply ? 'disabled title="You can only suggest a reply to a message you received."' : ''}
+                >
+                    ✨ Suggest Reply
+                </button>
+            `;
+
+            suggestionsContainer.innerHTML = `
+                <div class="flex flex-wrap gap-2 justify-center">
+                    ${suggestReplyButtonHTML}
+                    <button id="magic-compose-btn" class="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm cursor-pointer hover:bg-purple-300 transition-all">🪄 Magic Compose</button>
+                </div>
+            `;
+
+            if (canSuggestReply) {
+                document.getElementById('suggest-reply-btn').onclick = getSuggestedReplies;
+            }
+            document.getElementById('magic-compose-btn').onclick = getMagicCompose;
+        });
+
+        // --- APP INITIALIZATION ---
+        document.addEventListener('visibilitychange', () => {
+            if (!currentUser) return;
+            if (document.visibilityState === 'hidden') {
+                updateMyStatus('offline');
+            } else {
+                updateMyStatus('idle');
+            }
+        });
+
+        window.onload = async () => {
+            showScreen('splash-screen');
+            try {
+                await signOut(auth);
+            } catch (e) {
+                console.log("No user to sign out.");
+            }
+            
+            setTimeout(() => { 
+                isInitialLoad = false;
+                showScreen('login-screen');
+            }, 3500);
+        };
+    </script>
+</body>
+</html>
