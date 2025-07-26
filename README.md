@@ -15,7 +15,7 @@ The user journey through the application is designed to be intuitive and engagin
 
 ### 1.2 Visual Showcase
 
-*It is highly recommended to add a visual demonstration here.* An animated GIF showcasing the flow from login to sending an AI-suggested message would be incredibly effective in conveying the application's functionality.
+![Visual Showcase](visual%20showcase.jpeg)
 
 ### 1.3 Key Features
 
